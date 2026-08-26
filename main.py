@@ -1,0 +1,1 @@
+print("Password Strength Analyzer")
