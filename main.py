@@ -40,6 +40,20 @@ for module in modules:
                 return True
 
         return False
+
+    def check_alphabet_sequence(password):
+        password = password.lower()
+
+        for i in range(len(password) - 2):
+            first = ord(password[i])
+            second = ord(password[i + 1])
+            third = ord(password[i + 2])
+
+            if second == first + 1 and third == second + 1:
+                return True
+        return False
+
+        return False
     
     def check_repetition(password):
         for i in range(len(password) - 2):
@@ -93,17 +107,77 @@ for module in modules:
                 return True
 
         return False
+
         password = password.lower()
         for common in common_passwords:
             if common in password:
-                return True
+             return True
 
         return False
 
-def generate_advisory(sequential, repetition, common):
+def generate_verdict(vulnerability_count, threat_level, final_score, entropy_level, detected_weaknesses):
+
+    print()
+    print("╔══════════════════════════════════════════════╗")
+    print("║                NEXUS VERDICT                 ║")
+    print("╚══════════════════════════════════════════════╝")
+    print()
+
+    if final_score >= 86:
+        security_status = "SECURE"
+    elif final_score >= 71:
+        security_status = "LOW RISK"
+    elif final_score >= 51:
+        security_status = "MODERATE RISK"
+    elif final_score >= 31:
+        security_status = "HIGH RISK"
+    else:
+        security_status = "CRITICAL RISK"
+
+    print("SECURITY STATUS :", security_status)
+    print("Vulnerabilities :", vulnerability_count)
+    if detected_weaknesses:
+        print("[!] Detected Weaknesses:")
+    
+    for weakness in detected_weaknesses:
+        print("    →", weakness)
+
+    print()
+    if final_score >= 86:
+        print("[+] Password security is strong.")
+        print("[+] No major security weaknesses detected.")
+
+    elif final_score >= 71:
+        print("[+] Password security is good.")
+        print("[!] Minor improvements are recommended.")
+
+    elif final_score >= 51:
+        print("[!] Password security is moderate.")
+        print("[!] Some weaknesses may reduce resistance to attacks.")
+
+    elif final_score >= 31:
+        print("[!] Password security is weak.")
+        print("[!] Multiple weaknesses are reducing password security.")
+        print("[+] Recommendation : Create a longer and more unpredictable password.")
+
+    else:
+        print("[CRITICAL] Password security is extremely weak.")
+        print("[!] The password contains significant security weaknesses.")
+        print("[+] Recommendation : Replace this password immediately.")
+        print()
+        print()
+    print("Security Score :", final_score, "/ 100")
+    print("Entropy Level  :", entropy_level)
+    print("Threat Level   :", threat_level)
+
+def generate_advisory(alphabet_sequence, sequential, repetition, common, entropy_level):
     print()
     print("NEXUS ADVISORY")
     print("──────────────────────────────────────────────")
+
+    if alphabet_sequence:
+        print("[!] Alphabet sequence detected.")
+        print("[+] Recommendation : Avoid predictable alphabet patterns.")
 
     if common:
         print("[!] Your password contains a common password pattern.")
@@ -116,6 +190,18 @@ def generate_advisory(sequential, repetition, common):
     if repetition:
         print("[!] Repeated characters detected.")
         print("[+] Recommendation : Avoid repeating the same character multiple times.")
+
+    if entropy_level == "VERY WEAK":
+        print("[!] Password entropy is very weak.")
+        print("[+] Recommendation : Increase password length and complexity.")
+
+    elif entropy_level == "WEAK":
+        print("[!] Password entropy is weak.")
+        print("[+] Recommendation : Increase password length and character diversity.")
+
+    elif entropy_level == "MODERATE":
+        print("[!] Password entropy is moderate.")
+        print("[+] Recommendation : Increase password length and randomness.")
 
 print()
 print("THREAT ENGINE ........ ACTIVE")
@@ -216,7 +302,7 @@ while True:
         score += 20
     if has_special:
         score += 20
-        print("Security Score : ", score)
+        print("Base Security Score : ", score, "/ 100")
 
     choice = input("NEXUS > ").lower()
 
@@ -254,13 +340,26 @@ if choice == "c":
     print("THREAT ASSESSMENT")
     print("──────────────────────────────────────────────")
 
+# pattern_penalty
 pattern_penalty = 0
+vulnerability_count = 0
+detected_weaknesses = []
+alphabet_sequence = check_alphabet_sequence(password)
 
+if alphabet_sequence:
+    print("[!] Alphabet Sequence Pattern : DETECTED")
+    pattern_penalty += 10
+    vulnerability_count += 1
+    detected_weaknesses.append("Alphabet Sequence")
+else:
+    print("[+] Alphabet Sequence Pattern : NOT DETECTED")
 sequential_numbers = check_sequential_numbers(password)
 
 if sequential_numbers:
     print("[!] Sequential Number Pattern : DETECTED")
     pattern_penalty += 10
+    vulnerability_count += 1
+    detected_weaknesses.append("Sequential Numbers")
 else:
     print("[+] Sequential Number Pattern : NOT DETECTED")
 
@@ -269,6 +368,8 @@ repetition_pattern = check_repetition(password)
 if repetition_pattern:
     print("[!] Repetition Pattern : DETECTED")
     pattern_penalty += 10
+    vulnerability_count += 1
+    detected_weaknesses.append("Repetition")
 else:
     print("[+] Repetition Pattern : NOT DETECTED")
 
@@ -277,17 +378,47 @@ common_password = check_common_password(password)
 if common_password:
     print("[!] Common Password Pattern : DETECTED")
     pattern_penalty += 10
+    vulnerability_count += 1
+    detected_weaknesses.append("Common Password")
 else:
     print("[+] Common Password Pattern : NOT DETECTED")
+print()
+# print()
+print("Vulnerabilities Detected :", vulnerability_count)
+print("Detected Weaknesses :")
+for weakness in detected_weaknesses:
+    print(f"  - {weakness}")
+# ENTROPY PENALTY
+entropy_penalty = 0
 
-final_score = score - pattern_penalty
+if entropy < 30:
+    entropy_penalty += 30
+elif entropy < 50:
+    entropy_penalty += 10
+elif entropy < 70:
+    entropy_penalty += 5
 
+# FINAL SCORE
+
+final_score = score - pattern_penalty - entropy_penalty
 
 if final_score < 0:
     final_score = 0
 
+# SCORE BREAKDOWN    
+print()
+print("SCORE BREAKDOWN")
+print("──────────────────────────────────────────────")
+print("Base Score       : ",  score)
+print("Pattern Penalty  : ", "-", pattern_penalty)
+print("Entropy Penalty  : ", "-", entropy_penalty)
+print("──────────────────────────────────────────────")
+print("Final Score      : ", final_score, "/ 100")
+
+# THREAT LEVEL
+
 if final_score >= 86:
-    threat_level = "SECURE"
+        threat_level = "SECURE"
 elif final_score >= 71:
     threat_level = "LOW"
 elif final_score >= 51:
@@ -297,21 +428,22 @@ elif final_score >= 31:
 else:
     threat_level = "CRITICAL"
 
-entropy_penalty = 0
-if entropy < 30:
-    entropy_penalty += 30
-elif entropy < 50:
-    entropy_penalty += 20
-elif entropy < 70:
-    entropy_penalty += 10
-final_score = score - pattern_penalty - entropy_penalty
-
 print()
-print("Threat Level :", threat_level)
-print("Security Score :", final_score, "/ 100")
+print("THREAT LEVEL   :", threat_level)
+print("FINAL SCORE    :", final_score, "/ 100")
 
 generate_advisory(
+    alphabet_sequence,
     sequential_numbers,
     repetition_pattern,
-    common_password
+    common_password,
+    entropy_level
+)
+
+generate_verdict(
+    vulnerability_count,
+    threat_level,
+    final_score,
+    entropy_level,
+    detected_weaknesses
 )
