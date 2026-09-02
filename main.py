@@ -136,13 +136,27 @@ def generate_verdict(vulnerability_count, threat_level, final_score, entropy_lev
 
     print("SECURITY STATUS :", security_status)
     print("Vulnerabilities :", vulnerability_count)
+    print()
+
+    print("SECURITY EXPLANATION")
+    print("──────────────────────────────────────────────")
+
+    if vulnerability_count == 0:
+        print("[+] No major predictable patterns were detected.")
+        print("[+] Password structure appears resistant to common patterns.")
+
+    else:
+        print("[!] Predictable patterns were detected.")
+        print("[!] These weaknesses reduced the overall security score.")
+        print("[!] Strong entropy alone does not guarantee strong security.")
+    print()
+
     if detected_weaknesses:
         print("[!] Detected Weaknesses:")
     
     for weakness in detected_weaknesses:
         print("    →", weakness)
-
-    print()
+        # print()
     if final_score >= 86:
         print("[+] Password security is strong.")
         print("[+] No major security weaknesses detected.")
@@ -164,7 +178,7 @@ def generate_verdict(vulnerability_count, threat_level, final_score, entropy_lev
         print("[CRITICAL] Password security is extremely weak.")
         print("[!] The password contains significant security weaknesses.")
         print("[+] Recommendation : Replace this password immediately.")
-        print()
+        # print()
         print()
     print("Security Score :", final_score, "/ 100")
     print("Entropy Level  :", entropy_level)
