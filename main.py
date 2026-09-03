@@ -1,9 +1,6 @@
-import getpass
 import time
 import math
 from getpass import getpass
-
-from numpy import rint
 
 def scan_module(name):
     print(f"Scanning {name}........")
@@ -34,88 +31,94 @@ for module in modules:
     scan_module(module)
     print()
 
-    def check_sequential_numbers(password):
-        sequences = ["123", "234", "345", "456", "567", "678", "789"]
+def check_sequential_numbers(password):
+    sequences = ["123", "234", "345", "456", "567", "678", "789"]
 
-        for sequence in sequences:
-            if sequence in password:
-                return True
+    for sequence in sequences:
+        if sequence in password:
+            return True
 
         return False
 
-    def check_alphabet_sequence(password):
-        password = password.lower()
+def check_alphabet_sequence(password):
+    password = password.lower()
 
-        for i in range(len(password) - 2):
-            first = ord(password[i])
-            second = ord(password[i + 1])
-            third = ord(password[i + 2])
+    for i in range(len(password) - 2):
 
-            if second == first + 1 and third == second + 1:
-                return True
-        return False
+        if not (
+            password[i].isalpha()
+            and password[i + 1].isalpha()
+            and password[i + 2].isalpha()
+        ):
+            continue
+
+        first = ord(password[i])
+        second = ord(password[i + 1])
+        third = ord(password[i + 2])
+
+        if second == first + 1 and third == second + 1:
+            return True
 
         return False
     
-    def check_repetition(password):
-        for i in range(len(password) - 2):
-            if password[i] == password[i + 1] == password[i + 2]:
-                return True
+def check_repetition(password):
+    for i in range(len(password) - 2):
+        if password[i] == password[i + 1] == password[i + 2]:
+            return True
 
         return False
 
-    def check_common_password(password):
-        common_passwords = [
-            "password",
-            "123456",
-            "12345678",
-            "qwerty",
-            "admin",
-            "welcome",
-            "letmein",
-            "password123",
-            "MyPassword123!",
-            "password",
-            "123456789",
-            "1234567890",
-            "qwerty123",
-            "admin123",
-            "welcome123",
-            "iloveyou",
-            "monkey",
-            "dragon",
-            "football",
-            "master",
-            "login",
-            "princess",
-            "sunshine",
-            "shadow",
-            "superman",
-            "trustno1",
-            "passw0rd",
-            "abc123",
-            "000000",
-            "111111",
-            "654321",
-            "123123",
-            "HelloWorld",
-            "Hello123",
-        ]
+def check_common_password(password):
+    common_passwords = [
+        "password",
+        "123456",
+        "12345678",
+        "qwerty",
+        "admin",
+        "welcome",
+        "letmein",
+        "password123",
+        "MyPassword123!",
+        "password",
+        "123456789",
+        "1234567890",
+        "qwerty123",
+        "admin123",
+        "welcome123",
+        "iloveyou",
+        "monkey",
+        "dragon",
+        "football",
+        "master",
+        "login",
+        "princess",
+        "sunshine",
+        "shadow",
+        "superman",
+        "trustno1",
+        "passw0rd",
+        "abc123",
+        "000000",
+        "111111",
+        "654321",
+        "123123",
+        "HelloWorld",
+        "Hello123",
+    ]
 
-        password = password.lower()
+    password = password.lower()
 
-        for common in common_passwords:
-            if common in password:
-                return True
+    for common in common_passwords:
+        if common in password:
+            return True
+    return False
 
-        return False
+    password = password.lower()
+    for common in common_passwords:
+        if common in password:
+            return True
 
-        password = password.lower()
-        for common in common_passwords:
-            if common in password:
-             return True
-
-        return False
+    return False
 
 def generate_verdict(vulnerability_count, threat_level, final_score, entropy_level, detected_weaknesses):
 
@@ -158,7 +161,7 @@ def generate_verdict(vulnerability_count, threat_level, final_score, entropy_lev
     
     for weakness in detected_weaknesses:
         print("    →", weakness)
-        # print()
+        
     if final_score >= 86:
         print("[+] Password security is strong.")
         print("[+] No major security weaknesses detected.")
@@ -180,194 +183,197 @@ def generate_verdict(vulnerability_count, threat_level, final_score, entropy_lev
         print("[CRITICAL] Password security is extremely weak.")
         print("[!] The password contains significant security weaknesses.")
         print("[+] Recommendation : Replace this password immediately.")
-        # print()
         print()
     print("Security Score :", final_score, "/ 100")
     print("Entropy Level  :", entropy_level)
     print("Threat Level   :", threat_level)
 
 def generate_advisory(alphabet_sequence, sequential, repetition, common,entropy_level, final_score, has_lower, has_upper, has_number, has_special ):
+
+    recommendations = []
+
+    if common:
+        recommendations.append(
+            (100, "Common Password", "Use a completely unique password.")
+        )
+
+    if repetition:
+        recommendations.append(
+            (90, "Repetition", "Avoid repeating the same character multiple times.")
+        )
+
+    if sequential:
+        recommendations.append(
+            (80, "Sequential Numbers", "Avoid predictable number sequences.")
+        )
+
+    if alphabet_sequence:
+        recommendations.append(
+            (70, "Alphabet Sequence", "Avoid predictable alphabet patterns.")
+        )
+    if not has_upper:
+        recommendations.append(
+            (50, "Missing Uppercase", "Add uppercase characters.")
+        )
+
+    if not has_lower:
+        recommendations.append(
+            (50, "Missing Lowercase", "Add lowercase characters.")
+        )
+
+    if not has_number:
+        recommendations.append(
+            (50, "Missing Number", "Add numbers.")
+        )
+
+    if not has_special:
+        recommendations.append(
+            (50, "Missing Special", "Add special characters.")
+        )
+
+    if entropy_level in ["VERY WEAK", "WEAK", "MODERATE"]:
+        recommendations.append(
+            (40, "Entropy Weakness", "Increase password length and character diversity.")
+    )
+    recommendations.sort(reverse=True)
+
     print()
+    print("──────────────────────────────────────────────")
     print("NEXUS ADVISORY")
     print("──────────────────────────────────────────────")
     print("SMART RECOMMENDATIONS")
     print("──────────────────────────────────────────────")
     print()
 
-    # if final_score >= 86:
-    #     print("[+] Password security is strong.")
-    #     print("[+] No major improvements required.")
+    if recommendations:
 
-    # elif final_score >= 71:
-    #     print("[+] Password security is good.")
-    #     print("[!] Minor improvements can make it stronger.")
+        priority, weakness, recommendation = recommendations[0]
 
-    # elif final_score >= 51:
-    #     print("[!] Password security is moderate.")
-    #     print("[+] Consider increasing length and character diversity.")
-
-    # elif final_score >= 31:
-    #     print("[!] Password security is weak.")
-    #     print("[+] Create a longer and more unpredictable password.")
-
-    # else:
-    #     print("[CRITICAL] Password security is extremely weak.")
-    #     print("[+] Replace this password with a stronger one.")
-
-    # if common:
-    #     print("[CRITICAL] Common password pattern detected.")
-    #     print("[+] Recommendation : Use a completely unique password.")
-
-    # elif repetition:
-    #     print("[!] Repeated characters detected.")
-    #     print("[+] Recommendation : Avoid repeating the same character multiple times.")
-
-    # elif sequential:
-    #     print("[!] Sequential number pattern detected.")
-    #     print("[+] Recommendation : Avoid predictable number sequences.")
-
-    # elif alphabet_sequence:
-    #     print("[!] Alphabet sequence detected.")
-    #     print("[+] Recommendation : Avoid predictable alphabet patterns.")
-
-    # else:
-    #     print("[+] No major predictable patterns detected.")
-    # if alphabet_sequence:
-    #     print("[!] Alphabet sequence detected.")
-    #     print("[+] Recommendation : Avoid predictable alphabet patterns.")
-
-    # if common:
-    #     print("[!] Your password contains a common password pattern.")
-    #     print("[+] Recommendation : Use a unique password.")
-
-    # if sequential:
-    #     print("[!] Sequential numbers detected.")
-    #     print("[+] Recommendation : Avoid predictable number sequences.")
-
-    # if repetition:
-    #     print("[!] Repeated characters detected.")
-    #     print("[+] Recommendation : Avoid repeating the same character multiple times.")
-
-    # if common:
-    #     print("PRIMARY WEAKNESS")
-    #     print("[CRITICAL] Common password pattern detected.")
-    #     print("[+] Recommendation : Use a completely unique password.")
-
-    # elif repetition:
-    #     print("PRIMARY WEAKNESS")
-    #     print("[!] Repeated characters detected.")
-    #     print("[+] Recommendation : Avoid repeating the same character multiple times.")
-
-    # elif sequential:
-    #     print("PRIMARY WEAKNESS")
-    #     print("[!] Sequential number pattern detected.")
-    #     print("[+] Recommendation : Avoid predictable number sequences.")
-
-    # elif alphabet_sequence:
-    #     print("PRIMARY WEAKNESS")
-    #     print("[!] Alphabet sequence detected.")
-    #     print("[+] Recommendation : Avoid predictable alphabet patterns.")
-
-    # else:
-    #     print("[+] No major predictable patterns detected.")
-    # print()
-
-    primary_weakness = None
-
-    if common:
-        primary_weakness = "Common Password"
         print("PRIMARY WEAKNESS")
-        print("[CRITICAL] Common password pattern detected.")
-        print("[+] Recommendation : Use a completely unique password.")
 
-    elif repetition:
-        primary_weakness = "Repetition"
-        print("PRIMARY WEAKNESS")
-        print("[!] Repeated characters detected.")
-        print("[+] Recommendation : Avoid repeating the same character multiple times.")
+        if weakness == "Common Password":
+            print("[CRITICAL] Common password pattern detected.")
 
-    elif sequential:
-        primary_weakness = "Sequential Numbers"
-        print("PRIMARY WEAKNESS")
-        print("[!] Sequential number pattern detected.")
-        print("[+] Recommendation : Avoid predictable number sequences.")
+        elif weakness == "Repetition":
+            print("[!] Repeated characters detected.")
 
-    elif alphabet_sequence:
-        primary_weakness = "Alphabet Sequence"
-        print("PRIMARY WEAKNESS")
-        print("[!] Alphabet sequence detected.")
-        print("[+] Recommendation : Avoid predictable alphabet patterns.")
+        elif weakness == "Sequential Numbers":
+            print("[!] Sequential number pattern detected.")
 
+        elif weakness == "Alphabet Sequence":
+            print("[!] Alphabet sequence detected.")
+        elif weakness == "Entropy Weakness":
+            print("[!] Entropy weakness detected.")
+
+            print("[+] Recommendation :", recommendation)
+
+        if len(recommendations) > 1:
+
+            print()
+            print("──────────────────────────────────────────────")
+            print("ADDITIONAL WEAKNESSES")
+            print("──────────────────────────────────────────────")
+
+            for priority, weakness, recommendation in recommendations[1:]:
+
+                if weakness == "Common Password":
+                    print("[CRITICAL] Common password pattern detected.")
+
+                elif weakness == "Repetition":
+                    print("[!] Repeated characters detected.")
+
+                elif weakness == "Sequential Numbers":
+                    print("[!] Sequential number pattern detected.")
+
+                elif weakness == "Alphabet Sequence":
+                    print("[!] Alphabet sequence detected.")
+
+                elif weakness == "Entropy Weakness":
+                    print("[!] Entropy weakness detected.")
+
+                elif weakness == "Missing Uppercase":
+                    print("[!] Uppercase characters are missing.")
+
+                elif weakness == "Missing Lowercase":
+                    print("[!] Lowercase characters are missing.")
+
+                elif weakness == "Missing Number":
+                    print("[!] Numbers are missing.")
+
+                elif weakness == "Missing Special":
+                    print("[!] Special characters are missing.")
+
+                # elif weakness == "Missing Uppercase":
+                #     print("[!] Uppercase characters are missing.")
+
+                # elif weakness == "Missing Lowercase":
+                #     print("[!] Lowercase characters are missing.")
+
+                # elif weakness == "Missing Number":
+                #     print("[!] Numbers are missing.")
+
+                # elif weakness == "Missing Special":
+                #     print("[!] Special characters are missing.")
+
+                print("[+] Recommendation :", recommendation)
     else:
+
         print("PRIMARY WEAKNESS")
         print("[+] No major predictable patterns detected.")
-        print()
-    if primary_weakness and vulnerability_count > 1:
-        print()
-        print("──────────────────────────────────────────────")
-        print("ADDITIONAL WEAKNESSES")
-        print("──────────────────────────────────────────────")
 
-    if common and primary_weakness != "Common Password":
-        print("[CRITICAL] Common password pattern detected.")
-        print("[+] Recommendation : Use a completely unique password.")
-
-    if repetition and primary_weakness != "Repetition":
-        print("[!] Repeated characters detected.")
-        print("[+] Recommendation : Avoid repeating the same character multiple times.")
-
-    if sequential and primary_weakness != "Sequential Numbers":
-        print("[!] Sequential number pattern detected.")
-        print("[+] Recommendation : Avoid predictable number sequences.")
-
-    if alphabet_sequence and primary_weakness != "Alphabet Sequence":
-        print("[!] Alphabet sequence detected.")
-        print("[+] Recommendation : Avoid predictable alphabet patterns.")
-        print()
-        print("──────────────────────────────────────────────")
-        print("COMPOSITION ANALYSIS")
-        print("──────────────────────────────────────────────")
+    print()
+    print("──────────────────────────────────────────────")
+    print("COMPOSITION ANALYSIS")
+    print("──────────────────────────────────────────────")
 
     if not has_lower:
-        print("[!] Lowercase characters are missing.")
-        print("[+] Recommendation : Add lowercase characters.")
+        print("[!] Lowercase characters : MISSING")
 
     if not has_upper:
-        print("[!] Uppercase characters are missing.")
-        print("[+] Recommendation : Add uppercase characters.")
+        print("[!] Uppercase characters : MISSING")
 
     if not has_number:
-        print("[!] Numbers are missing.")
-        print("[+] Recommendation : Add numbers.")
+        print("[!] Numbers : MISSING")
 
     if not has_special:
-        print("[!] Special characters are missing.")
-        print("[+] Recommendation : Add special characters.")
+        print("[!] Special characters : MISSING")
 
     if has_lower and has_upper and has_number and has_special:
         print("[+] All major character types are present.")
-        
-    if entropy_level == "VERY WEAK":
-        print("[!] Password entropy is very weak.")
-        print("[+] Recommendation : Increase password length and complexity.")
 
-    elif entropy_level == "WEAK":
-        print("[!] Password entropy is weak.")
-        print("[+] Recommendation : Increase password length and character diversity.")
+    print()
 
-    elif entropy_level == "MODERATE":
-        print("[!] Password entropy is moderate.")
-        print("[+] Recommendation : Increase password length and randomness.")
+    # if entropy_level == "VERY WEAK":
+    #     print("[!] Password entropy is very weak.")
+    #     print("[+] Recommendation : Increase password length and complexity.")
 
+    # elif entropy_level == "WEAK":
+    #     print("[!] Password entropy is weak.")
+    #     print("[+] Recommendation : Increase password length and character diversity.")
+
+    # elif entropy_level == "MODERATE":
+    #     print("[!] Password entropy is moderate.")
+    #     print("[+] Recommendation : Increase password length and randomness.")
 print()
 print("THREAT ENGINE ........ ACTIVE")
 # print()
 print("ANALYSIS CORE ........ READY")
 print()
+# password = getpass("Enter your Password: ")
+# print("Password captured successfully.")
+# print()
+
 password = getpass("Enter your Password: ")
+
+if not password:
+    print()
+    print("[!] No password entered.")
+    print("[!] NEXUS cannot perform security analysis.")
+    print("[+] Please enter a password and try again.")
+    exit()
+
 print("Password captured successfully.")
 print()
-
 while True:
     print()
     print("╔══════════════════════════════════════════════╗")
@@ -458,7 +464,7 @@ while True:
         score += 20
     if has_special:
         score += 20
-        print("Base Security Score : ", score, "/ 100")
+    print("Base Security Score : ", score, "/ 100")
 
     choice = input("NEXUS > ").lower()
 
@@ -587,6 +593,14 @@ else:
 print()
 print("THREAT LEVEL   :", threat_level)
 print("FINAL SCORE    :", final_score, "/ 100")
+
+generate_verdict(
+    vulnerability_count,
+    threat_level,
+    final_score,
+    entropy_level,
+    detected_weaknesses
+)
 
 generate_advisory(
         alphabet_sequence,
