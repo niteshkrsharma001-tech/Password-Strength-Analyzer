@@ -215,24 +215,24 @@ def generate_verdict(
 
 def generate_advisory(
     alphabet_sequence,
-    sequential,
-    repetition,
-    common,
+    sequential_numbers,
+    repetition_pattern,
+    common_password,
     entropy_level,
     final_score,
-    has_lower,
-    has_upper,
+    has_lowercase,
+    has_uppercase,
     has_number,
-    has_special
+    has_special,
+    length
 ):
-
     recommendations = []
 
     # --------------------------------------------------------
     # Pattern Recommendations
     # --------------------------------------------------------
 
-    if common:
+    if common_password:
 
         recommendations.append(
             (
@@ -242,7 +242,7 @@ def generate_advisory(
             )
         )
 
-    if repetition:
+    if repetition_pattern:
 
         recommendations.append(
             (
@@ -252,7 +252,7 @@ def generate_advisory(
             )
         )
 
-    if sequential:
+    if sequential_numbers:
 
         recommendations.append(
             (
@@ -276,7 +276,7 @@ def generate_advisory(
     # Character Composition Recommendations
     # --------------------------------------------------------
 
-    if not has_upper:
+    if not has_uppercase:
 
         recommendations.append(
             (
@@ -286,7 +286,7 @@ def generate_advisory(
             )
         )
 
-    if not has_lower:
+    if not has_lowercase:
 
         recommendations.append(
             (
@@ -443,10 +443,10 @@ def generate_advisory(
     print("COMPOSITION ANALYSIS")
     print("──────────────────────────────────────────────")
 
-    if not has_lower:
+    if not has_lowercase:
         print("[!] Lowercase characters : MISSING")
 
-    if not has_upper:
+    if not has_uppercase:
         print("[!] Uppercase characters : MISSING")
 
     if not has_number:
@@ -455,10 +455,89 @@ def generate_advisory(
     if not has_special:
         print("[!] Special characters : MISSING")
 
-    if has_lower and has_upper and has_number and has_special:
+    if has_lowercase and has_uppercase and has_number and has_special:
         print("[+] All major character types are present.")
+        print()
 
+    print("──────────────────────────────────────────────")
+    print("PASSWORD PROFILE")
+    print("──────────────────────────────────────────────")
 
+    if alphabet_sequence or sequential_numbers or repetition_pattern or common_password:
+        print("[!] Pattern Risk      : HIGH")
+    else:
+        print("[+] Pattern Risk      : LOW")
+
+    if common_password:
+        print("[!] Predictability   : VERY HIGH")
+
+    elif alphabet_sequence or sequential_numbers or repetition_pattern:
+        print("[!] Predictability   : HIGH")
+
+    else:
+        print("[+] Predictability   : LOW")
+
+    if has_lowercase and has_uppercase and has_number and has_special:
+        print("[+] Character Mix     : EXCELLENT")
+
+    elif (
+        (has_lowercase and has_uppercase)
+        or (has_lowercase and has_number)
+        or (has_uppercase and has_number)
+    ):
+        print("[+] Character Mix     : GOOD")
+
+    else:
+        print("[!] Character Mix     : LIMITED")
+
+    if length >= 12:
+        print("[+] Length Profile    : STRONG")
+
+    elif length >= 8:
+        print("[+] Length Profile    : GOOD")
+
+    else:
+        print("[!] Length Profile    : WEAK")
+
+    if final_score >= 86:
+        print("[+] Overall Security  : SECURE")
+
+    elif final_score >= 71:
+        print("[+] Overall Security  : LOW RISK")
+
+    elif final_score >= 51:
+        print("[!] Overall Security  : MODERATE RISK")
+
+    elif final_score >= 31:
+        print("[!] Overall Security  : HIGH RISK")
+
+    else:
+        print("[CRITICAL] Overall Security  : CRITICAL RISK")
+
+    print()
+    print("──────────────────────────────────────────────")
+    print("SECURITY RECOMMENDATION")
+    print("──────────────────────────────────────────────")
+
+    if final_score >= 86:
+        print("[+] Password meets NEXUS security requirements.")
+        print("[+] No immediate improvements required.")
+
+    elif final_score >= 71:
+        print("[+] Password security is good.")
+        print("[!] Minor improvements are recommended.")
+
+    elif final_score >= 51:
+        print("[!] Password has moderate security.")
+        print("[!] Consider improving password unpredictability.")
+
+    elif final_score >= 31:
+        print("[!] Password security is weak.")
+        print("[!] Create a longer and more unpredictable password.")
+
+    else:
+        print("[CRITICAL] Password security is extremely weak.")
+        print("[!] Replace this password immediately.")
 # ============================================================
 # NEXUS // MAIN PROGRAM
 # ============================================================
@@ -518,9 +597,6 @@ if not password:
     print("[+] Please enter a password and try again.")
 
     exit()
-    # return
-
-
 print()
 print("Password captured successfully.")
 print()
@@ -739,7 +815,7 @@ if choice == "c":
 # ============================================================
 
 pattern_penalty = 0
-vulnerability_count = 0
+# vulnerability_count = 0
 detected_weaknesses = []
 
 
@@ -1022,5 +1098,6 @@ generate_advisory(
     has_lowercase,
     has_uppercase,
     has_number,
-    has_special
+    has_special,
+    length
 )
