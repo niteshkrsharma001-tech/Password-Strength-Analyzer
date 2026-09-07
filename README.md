@@ -81,7 +81,7 @@ NEXUS follows a multi-stage password analysis process:
 git clone https://github.com/niteshkrsharma001-tech/Password-Strength-Analyzer.git
 cd Password-Strength-Analyzer
 
-### 2.Run NEXUS
+### 2. Run NEXUS
 
  python main.py
 
