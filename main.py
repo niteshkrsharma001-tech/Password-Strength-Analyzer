@@ -111,6 +111,256 @@ def check_common_password(password):
 
 
 # ============================================================
+# NEXUS // SCORE ENGINE
+# ============================================================
+
+def calculate_score(
+    length,
+    has_lowercase,
+    has_uppercase,
+    has_number,
+    has_special,
+    entropy
+):
+
+    score = 0
+
+    # Length
+    if length >= 8:
+        score += 15
+
+    if length >= 12:
+        score += 15
+
+    # Character composition
+    if has_lowercase:
+        score += 10
+
+    if has_uppercase:
+        score += 10
+
+    if has_number:
+        score += 15
+
+    if has_special:
+        score += 15
+
+    # Entropy contribution
+    if entropy >= 90:
+        score += 20
+
+    elif entropy >= 70:
+        score += 15
+
+    elif entropy >= 50:
+        score += 10
+
+    elif entropy >= 30:
+        score += 5
+
+    return score
+
+# ============================================================
+# NEXUS // THREAT ENGINE
+# ============================================================
+
+def calculate_pattern_risk(
+    alphabet_sequence,
+    sequential_numbers,
+    repetition_pattern,
+    common_password
+):
+     
+    pattern_count = 0
+
+    if alphabet_sequence:
+        pattern_count += 1
+
+    if sequential_numbers:
+        pattern_count += 1
+
+    if repetition_pattern:
+        pattern_count += 1
+
+    if common_password:
+        pattern_count += 1
+
+    if common_password:
+        return "CRITICAL"
+
+    elif pattern_count >= 2:
+        return "HIGH"
+
+    elif pattern_count == 1:
+        return "MEDIUM"
+
+    else:
+        return "LOW"
+    
+def calculate_predictability_risk(
+    common_password,
+    alphabet_sequence,
+    sequential_numbers,
+    repetition_pattern,
+    entropy_level
+):
+
+    if common_password:
+        return "VERY HIGH"
+
+    elif (
+        alphabet_sequence
+        or sequential_numbers
+        or repetition_pattern
+    ):
+        return "HIGH"
+
+    elif entropy_level in ["VERY WEAK", "WEAK"]:
+        return "HIGH"
+
+    elif entropy_level == "MODERATE":
+        return "MEDIUM"
+
+    else:
+        return "LOW"
+
+def calculate_complexity_risk(
+    has_lowercase,
+    has_uppercase,
+    has_number,
+    has_special
+):
+
+    character_types = 0
+
+    if has_lowercase:
+        character_types += 1
+
+    if has_uppercase:
+        character_types += 1
+
+    if has_number:
+        character_types += 1
+
+    if has_special:
+        character_types += 1
+
+    if character_types == 4:
+        return "LOW"
+
+    elif character_types == 3:
+        return "MEDIUM"
+
+    elif character_types == 2:
+        return "HIGH"
+
+    else:
+        return "VERY HIGH"
+
+def calculate_length_risk(length):
+
+    if length < 8:
+        return "VERY HIGH"
+
+    elif length < 12:
+        return "MEDIUM"
+
+    elif length < 16:
+        return "LOW"
+
+    else:
+        return "VERY LOW"
+
+def calculate_attack_exposure(
+    common_password,
+    predictability_risk,
+    complexity_risk,
+    length_risk
+):
+
+    if common_password:
+        return "VERY HIGH"
+
+    elif predictability_risk == "VERY HIGH":
+        return "VERY HIGH"
+
+    elif (
+        predictability_risk == "HIGH"
+        and length_risk in ["HIGH", "VERY HIGH"]
+    ):
+        return "HIGH"
+
+    elif (
+        complexity_risk == "VERY HIGH"
+        or length_risk == "VERY HIGH"
+    ):
+        return "HIGH"
+
+    elif (
+        predictability_risk == "HIGH"
+        or complexity_risk == "HIGH"
+        or length_risk == "MEDIUM"
+    ):
+        return "MEDIUM"
+
+    else:
+        return "LOW"
+# ============================================================
+# NEXUS // THREAT AGGREGATOR
+# ============================================================
+
+def get_risk_value(risk):
+
+    risk_values = {
+        "VERY LOW": 0,
+        "LOW": 1,
+        "MEDIUM": 2,
+        "HIGH": 3,
+        "VERY HIGH": 4,
+        "CRITICAL": 5
+    }
+
+    return risk_values[risk]
+
+def calculate_threat_level(
+    pattern_risk,
+    predictability_risk,
+    complexity_risk,
+    length_risk,
+    attack_exposure
+):
+
+    pattern_value = get_risk_value(pattern_risk)
+    predictability_value = get_risk_value(predictability_risk)
+    complexity_value = get_risk_value(complexity_risk)
+    length_value = get_risk_value(length_risk)
+    attack_value = get_risk_value(attack_exposure)
+
+    threat_score = (
+        pattern_value
+        + predictability_value
+        + complexity_value
+        + length_value
+        + attack_value
+    )
+
+    if threat_score >= 17:
+        threat_level = "CRITICAL"
+
+    elif threat_score >= 13:
+        threat_level = "HIGH"
+
+    elif threat_score >= 9:
+        threat_level = "MEDIUM"
+
+    elif threat_score >= 5:
+        threat_level = "LOW"
+
+    else:
+        threat_level = "SECURE"
+
+    return threat_score, threat_level
+# ============================================================
 # NEXUS // VERDICT ENGINE
 # ============================================================
 
@@ -124,7 +374,7 @@ def generate_verdict(
 
     print()
     print("╔══════════════════════════════════════════════╗")
-    print("║                NEXUS VERDICT                ║")
+    print("║                NEXUS VERDICT                 ║")
     print("╚══════════════════════════════════════════════╝")
     print()
 
@@ -149,24 +399,20 @@ def generate_verdict(
     print()
     print("SECURITY EXPLANATION")
     print("──────────────────────────────────────────────")
-
     if vulnerability_count == 0:
-
-        print("[+] No major predictable patterns were detected.")
+        print("[+] No major security weaknesses were detected.")
         print("[+] Password structure appears resistant to common patterns.")
-
     else:
-
-        print("[!] Predictable patterns were detected.")
+        print("[!] Security weaknesses were detected.")
         print("[!] These weaknesses reduced the overall security score.")
-        print("[!] Strong entropy alone does not guarantee strong security.")
+        print("[!] Short length or low entropy can reduce resistance to attacks.")
         print()
 
-        if detected_weaknesses:
-            print("[!] Detected Weaknesses:")
+    if detected_weaknesses:
+        print("[!] Detected Weaknesses:")
 
-            for weakness in detected_weaknesses:
-                print("    →", weakness)
+        for weakness in detected_weaknesses:
+            print("    →", weakness)
 
     print()
 
@@ -207,7 +453,13 @@ def generate_verdict(
     print("Security Score :", final_score, "/ 100")
     print("Entropy Level  :", entropy_level)
     print("Threat Level   :", threat_level)
-
+    # print()
+    # print("RISK VALUE TEST")
+    # print("Pattern       :", get_risk_value(pattern_risk))
+    # print("Predictability:", get_risk_value(predictability_risk))
+    # print("Complexity    :", get_risk_value(complexity_risk))
+    # print("Length        :", get_risk_value(length_risk))
+    # print("Attack        :", get_risk_value(attack_exposure))
 
 # ============================================================
 # NEXUS // ADVISORY ENGINE
@@ -224,7 +476,12 @@ def generate_advisory(
     has_uppercase,
     has_number,
     has_special,
-    length
+    length,
+    pattern_risk,
+    predictability_risk,
+    complexity_risk,
+    length_risk,
+    attack_exposure
 ):
     recommendations = []
 
@@ -463,11 +720,14 @@ def generate_advisory(
     print("PASSWORD PROFILE")
     print("──────────────────────────────────────────────")
 
-    if alphabet_sequence or sequential_numbers or repetition_pattern or common_password:
-        print("[!] Pattern Risk      : HIGH")
+    # if alphabet_sequence or sequential_numbers or repetition_pattern or common_password:
+    #     print("[!] Pattern Risk      : HIGH")
+    # else:
+    #     print("[+] Pattern Risk      : LOW")
+    if pattern_risk in ["CRITICAL", "HIGH", "MEDIUM"]:
+        print("[!] Pattern Risk      :", pattern_risk)
     else:
-        print("[+] Pattern Risk      : LOW")
-
+        print("[+] Pattern Risk      :", pattern_risk)
     if common_password:
         print("[!] Predictability   : VERY HIGH")
 
@@ -737,26 +997,15 @@ while True:
     # BASE SECURITY SCORE
     # --------------------------------------------------------
 
-    score = 0
-
-    if length >= 8:
-        score += 20
-
-    if length >= 12:
-        score += 10
-
-    if has_lowercase:
-        score += 15
-
-    if has_uppercase:
-        score += 15
-
-    if has_number:
-        score += 20
-
-    if has_special:
-        score += 20
-
+    score = calculate_score(
+    length,
+    has_lowercase,
+    has_uppercase,
+    has_number,
+    has_special,
+    entropy
+    )
+    
     print("Base Security Score :", score, "/ 100")
 
 
@@ -788,26 +1037,24 @@ while True:
 # THREAT ANALYSIS
 # ============================================================
 
-if choice == "c":
+print()
+print("╔══════════════════════════════════════════════╗")
+print("║              THREAT ANALYSIS                 ║")
+print("╚══════════════════════════════════════════════╝")
+print()
 
-    print()
-    print("╔══════════════════════════════════════════════╗")
-    print("║              THREAT ANALYSIS                 ║")
-    print("╚══════════════════════════════════════════════╝")
-    print()
+print("NEXUS THREAT ENGINE")
+print()
 
-    print("NEXUS THREAT ENGINE")
-    print()
+print("[+] Checking password entropy.............. DONE")
+print("[+] Checking common patterns............... DONE")
+print("[+] Checking sequential characters......... DONE")
+print("[+] Checking repetition patterns........... DONE")
+print("[+] Evaluating password complexity......... DONE")
+print()
 
-    print("[+] Checking password entropy.............. DONE")
-    print("[+] Checking common patterns............... DONE")
-    print("[+] Checking sequential characters......... DONE")
-    print("[+] Checking repetition patterns........... DONE")
-    print("[+] Evaluating password complexity......... DONE")
-    print()
-
-    print("THREAT ASSESSMENT")
-    print("──────────────────────────────────────────────")
+print("THREAT ASSESSMENT")
+print("──────────────────────────────────────────────")
 
 
 # ============================================================
@@ -815,7 +1062,6 @@ if choice == "c":
 # ============================================================
 
 pattern_penalty = 0
-# vulnerability_count = 0
 detected_weaknesses = []
 
 
@@ -902,7 +1148,63 @@ else:
 
     print("[+] Common Password Pattern : NOT DETECTED")
 
+# ============================================================
+# PATTERN RISK
+# ============================================================
 
+pattern_risk = calculate_pattern_risk(
+    alphabet_sequence,
+    sequential_numbers,
+    repetition_pattern,
+    common_password
+)
+
+print()
+print("Pattern Risk :", pattern_risk)
+
+predictability_risk = calculate_predictability_risk(
+    common_password,
+    alphabet_sequence,
+    sequential_numbers,
+    repetition_pattern,
+    entropy_level
+)
+
+print(
+    "Predictability   :",
+    predictability_risk
+)
+
+complexity_risk = calculate_complexity_risk(
+    has_lowercase,
+    has_uppercase,
+    has_number,
+    has_special
+)
+
+print(
+    "Complexity Risk  :",
+    complexity_risk
+)
+
+length_risk = calculate_length_risk(length)
+
+print(
+    "Length Risk      :",
+    length_risk
+)
+
+attack_exposure = calculate_attack_exposure(
+    common_password,
+    predictability_risk,
+    complexity_risk,
+    length_risk
+)
+
+print(
+    "Attack Exposure  :",
+    attack_exposure
+)
 # ============================================================
 # COMPOSITION WEAKNESSES
 # ============================================================
@@ -977,31 +1279,18 @@ for weakness in detected_weaknesses:
 # ENTROPY PENALTY
 # ============================================================
 
-entropy_penalty = 0
-
-if entropy < 30:
-
-    entropy_penalty += 30
-
-elif entropy < 50:
-
-    entropy_penalty += 10
-
-elif entropy < 70:
-
-    entropy_penalty += 5
 
 
 # ============================================================
 # FINAL SCORE
 # ============================================================
 
-final_score = (
-    score
-    - pattern_penalty
-    - entropy_penalty
-)
-
+# final_score = (
+#     score
+#     - pattern_penalty
+#     - entropy_penalty
+# )
+final_score = score - pattern_penalty
 
 if final_score < 0:
 
@@ -1027,11 +1316,11 @@ print(
     pattern_penalty
 )
 
-print(
-    "Entropy Penalty  : ",
-    "-",
-    entropy_penalty
-)
+# print(
+#     "Entropy Penalty  : ",
+#     "-",
+#     entropy_penalty
+# )
 
 print("──────────────────────────────────────────────")
 
@@ -1046,29 +1335,82 @@ print(
 # THREAT LEVEL
 # ============================================================
 
-if final_score >= 86:
+# if final_score >= 86:
 
-    threat_level = "SECURE"
+#     threat_level = "SECURE"
 
-elif final_score >= 71:
+# elif final_score >= 71:
 
-    threat_level = "LOW"
+#     threat_level = "LOW"
 
-elif final_score >= 51:
+# elif final_score >= 51:
 
-    threat_level = "MEDIUM"
+#     threat_level = "MEDIUM"
 
-elif final_score >= 31:
+# elif final_score >= 31:
 
-    threat_level = "HIGH"
+#     threat_level = "HIGH"
 
-else:
+# else:
 
-    threat_level = "CRITICAL"
+#     threat_level = "CRITICAL"
 
+threat_score, threat_level = calculate_threat_level(
+    pattern_risk,
+    predictability_risk,
+    complexity_risk,
+    length_risk,
+    attack_exposure
+)
 
 print()
-print("THREAT LEVEL   :", threat_level)
+print("THREAT AGGREGATION")
+print("──────────────────────────────────────────────")
+
+print(
+    "Pattern Risk       :",
+    pattern_risk,
+    "[", get_risk_value(pattern_risk), "]"
+)
+
+print(
+    "Predictability     :",
+    predictability_risk,
+    "[", get_risk_value(predictability_risk), "]"
+)
+
+print(
+    "Complexity Risk    :",
+    complexity_risk,
+    "[", get_risk_value(complexity_risk), "]"
+)
+
+print(
+    "Length Risk        :",
+    length_risk,
+    "[", get_risk_value(length_risk), "]"
+)
+
+print(
+    "Attack Exposure    :",
+    attack_exposure,
+    "[", get_risk_value(attack_exposure), "]"
+)
+
+print("──────────────────────────────────────────────")
+
+print(
+    "Threat Score       :",
+    threat_score,
+    "/ 21"
+)
+
+print(
+    "Threat Level       :",
+    threat_level
+)
+# print()
+# print("THREAT LEVEL   :", threat_level)
 
 
 # ============================================================
@@ -1099,5 +1441,10 @@ generate_advisory(
     has_uppercase,
     has_number,
     has_special,
-    length
+    length,
+    pattern_risk,
+    predictability_risk,
+    complexity_risk,
+    length_risk,
+    attack_exposure
 )
