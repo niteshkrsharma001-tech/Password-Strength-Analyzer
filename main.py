@@ -453,14 +453,7 @@ def generate_verdict(
     print("Security Score :", final_score, "/ 100")
     print("Entropy Level  :", entropy_level)
     print("Threat Level   :", threat_level)
-    # print()
-    # print("RISK VALUE TEST")
-    # print("Pattern       :", get_risk_value(pattern_risk))
-    # print("Predictability:", get_risk_value(predictability_risk))
-    # print("Complexity    :", get_risk_value(complexity_risk))
-    # print("Length        :", get_risk_value(length_risk))
-    # print("Attack        :", get_risk_value(attack_exposure))
-
+    
 # ============================================================
 # NEXUS // ADVISORY ENGINE
 # ============================================================
@@ -720,44 +713,30 @@ def generate_advisory(
     print("PASSWORD PROFILE")
     print("──────────────────────────────────────────────")
 
-    # if alphabet_sequence or sequential_numbers or repetition_pattern or common_password:
-    #     print("[!] Pattern Risk      : HIGH")
-    # else:
-    #     print("[+] Pattern Risk      : LOW")
     if pattern_risk in ["CRITICAL", "HIGH", "MEDIUM"]:
         print("[!] Pattern Risk      :", pattern_risk)
     else:
         print("[+] Pattern Risk      :", pattern_risk)
-    if common_password:
-        print("[!] Predictability   : VERY HIGH")
 
-    elif alphabet_sequence or sequential_numbers or repetition_pattern:
-        print("[!] Predictability   : HIGH")
-
+    if predictability_risk in ["VERY HIGH", "HIGH", "MEDIUM"]:
+        print("[!] Predictability   :", predictability_risk)
     else:
-        print("[+] Predictability   : LOW")
+        print("[+] Predictability   :", predictability_risk)
 
-    if has_lowercase and has_uppercase and has_number and has_special:
-        print("[+] Character Mix     : EXCELLENT")
-
-    elif (
-        (has_lowercase and has_uppercase)
-        or (has_lowercase and has_number)
-        or (has_uppercase and has_number)
-    ):
-        print("[+] Character Mix     : GOOD")
-
+    if complexity_risk in ["VERY HIGH", "HIGH", "MEDIUM"]:
+        print("[!] Complexity Risk  :", complexity_risk)
     else:
-        print("[!] Character Mix     : LIMITED")
+        print("[+] Complexity Risk  :", complexity_risk)
 
-    if length >= 12:
-        print("[+] Length Profile    : STRONG")
-
-    elif length >= 8:
-        print("[+] Length Profile    : GOOD")
-
+    if length_risk in ["VERY HIGH", "HIGH", "MEDIUM"]:
+        print("[!] Length Risk       :", length_risk)
     else:
-        print("[!] Length Profile    : WEAK")
+        print("[+] Length Risk       :", length_risk)
+
+    if attack_exposure in ["VERY HIGH", "HIGH", "MEDIUM"]:
+        print("[!] Attack Exposure   :", attack_exposure)
+    else:
+        print("[+] Attack Exposure   :", attack_exposure)
 
     if final_score >= 86:
         print("[+] Overall Security  : SECURE")
@@ -1285,11 +1264,6 @@ for weakness in detected_weaknesses:
 # FINAL SCORE
 # ============================================================
 
-# final_score = (
-#     score
-#     - pattern_penalty
-#     - entropy_penalty
-# )
 final_score = score - pattern_penalty
 
 if final_score < 0:
@@ -1316,12 +1290,6 @@ print(
     pattern_penalty
 )
 
-# print(
-#     "Entropy Penalty  : ",
-#     "-",
-#     entropy_penalty
-# )
-
 print("──────────────────────────────────────────────")
 
 print(
@@ -1334,26 +1302,6 @@ print(
 # ============================================================
 # THREAT LEVEL
 # ============================================================
-
-# if final_score >= 86:
-
-#     threat_level = "SECURE"
-
-# elif final_score >= 71:
-
-#     threat_level = "LOW"
-
-# elif final_score >= 51:
-
-#     threat_level = "MEDIUM"
-
-# elif final_score >= 31:
-
-#     threat_level = "HIGH"
-
-# else:
-
-#     threat_level = "CRITICAL"
 
 threat_score, threat_level = calculate_threat_level(
     pattern_risk,
@@ -1409,9 +1357,6 @@ print(
     "Threat Level       :",
     threat_level
 )
-# print()
-# print("THREAT LEVEL   :", threat_level)
-
 
 # ============================================================
 # VERDICT ENGINE
