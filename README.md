@@ -1,69 +1,31 @@
 # NEXUS // Password Intelligence
 
-## Description
+> A local-only Python cybersecurity tool for password security analysis, threat assessment, and security recommendations.
 
-NEXUS // Password Intelligence is a local-only cybersecurity tool designed to analyze password security and identify common weaknesses.
+---
 
-It evaluates password length, character composition, estimated entropy, predictable patterns, sequential numbers, repeated characters, and common password patterns.
+## Overview
 
-NEXUS then calculates a security score, determines the threat level, identifies vulnerabilities, and provides smart security recommendations to help users create stronger and more unpredictable passwords.
+**NEXUS // Password Intelligence** is a Python-based cybersecurity project designed to analyze password security and identify common weaknesses.
+
+The tool evaluates:
+
+- Password length
+- Character composition
+- Estimated entropy
+- Predictable patterns
+- Sequential numbers
+- Alphabet sequences
+- Repeated characters
+- Common password patterns
+- Vulnerabilities
+- Multiple security risk categories
+
+NEXUS combines these findings to calculate a **security score**, determine a **threat level**, generate a **security verdict**, and provide **smart security recommendations**.
 
 All password analysis is performed locally on the user's system.
 
-Passwords are not stored or transmitted by the application.
-
-## Features
-
-- 🔐 Hidden password input using secure terminal input
-- 📊 Password strength scoring from 0–100
-- 🧮 Estimated password entropy analysis
-- 🔎 Alphabet sequence detection
-- 🔢 Sequential number detection
-- 🔁 Repetition pattern detection
-- 🚨 Common password detection
-- ⚠️ Vulnerability tracking and threat assessment
-- 🧠 Smart security recommendations
-- 📋 Detailed password security profile
-- 🛡️ Local-only password analysis
-- 💻 Hacker-style terminal interface
-
-## How It Works
-
-NEXUS follows a multi-stage password analysis process:
-
-1. **Password Input**
-   - Accepts the password through hidden terminal input.
-
-2. **Basic Analysis**
-   - Checks password length.
-   - Detects lowercase, uppercase, numbers, and special characters.
-   - Calculates the estimated character pool.
-
-3. **Entropy Analysis**
-   - Estimates password entropy in bits.
-   - Classifies entropy from `VERY WEAK` to `VERY STRONG`.
-
-4. **Pattern Detection**
-   - Detects alphabet sequences.
-   - Detects sequential numbers.
-   - Detects repeated characters.
-   - Checks for common password patterns.
-
-5. **Threat Assessment**
-   - Tracks detected vulnerabilities.
-   - Applies pattern and entropy penalties.
-   - Calculates the final security score.
-   - Assigns a threat level.
-
-6. **Security Verdict**
-   - Generates an overall security status.
-   - Explains detected weaknesses.
-
-7. **Smart Advisory**
-   - Identifies the primary weakness.
-   - Lists additional weaknesses.
-   - Provides security recommendations.
-   - Generates a password security profile.
+> **Privacy:** Passwords are not stored or transmitted by the application.
 
 ## Tech Stack
 
@@ -72,100 +34,124 @@ NEXUS follows a multi-stage password analysis process:
 - **Interface:** Command-Line / Terminal
 - **Platform:** Windows / Cross-platform Python environment
 - **Version Control:** Git & GitHub
-
+---
 ## Installation
+
+### Requirements
+
+Before running NEXUS, make sure you have:
+
+- Python 3.x
+- Git
+- A terminal / command prompt
+
+NEXUS uses only Python standard-library modules, so no external packages are required.
 
 ### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/niteshkrsharma001-tech/Password-Strength-Analyzer.git
 cd Password-Strength-Analyzer
+python main.py
+# =============================================================================================
+# python main.py       
 
-### 2. Run NEXUS
+# Enter your Password:
 
- python main.py
+# Password captured successfully.
 
-### 3. Analyze a Password
+# NEXUS will then perform the security analysis and generate the final verdict.
+# =============================================================================================
+## Features
 
-NEXUS will securely request the password through hidden terminal input and guide you through the analysis process.
+- 🔐 Hidden password input using Python `getpass`
+- 👁️ Password reveal / hide functionality
+- 📊 Security score from `0–100`
+- 🧮 Estimated password entropy analysis
+- 🔎 Alphabet sequence detection
+- 🔢 Sequential number detection
+- 🔁 Repetition pattern detection
+- 🚨 Common password detection
+- ⚠️ Vulnerability tracking
+- 🛡️ Pattern risk assessment
+- 🧠 Predictability risk analysis
+- 🔐 Complexity risk analysis
+- 📏 Length risk analysis
+- ⚔️ Attack exposure assessment
+- 🚨 Threat score and threat level
+- 📋 Detailed security verdict
+- 💡 Smart security advisory
+- 💻 Cybersecurity-focused terminal interface
+- 🔒 Local-only password analysis
 
-Use the following commands when prompted:
+---
 
-R — Reveal password
-H — Hide password
-C — Continue to analysis 
+## How It Works
 
-## Security & Privacy
+NEXUS processes a password through multiple analysis stages.
 
-NEXUS is designed with a local-only password analysis approach.
+### 1. Password Input
 
-- 🔒 Passwords are processed locally on the user's system.
-- 🚫 Passwords are not stored in files or databases.
-- 🚫 Passwords are not transmitted to external servers.
-- 🚫 No external API is used for password analysis.
-- 👁️ Password input is hidden by default using Python's `getpass`.
-- ⚠️ Passwords are displayed only when the user explicitly chooses the `R` (Reveal) option.
+The password is collected using Python's `getpass` module so that it is hidden during normal terminal input.
 
-> **Note:** NEXUS is an educational cybersecurity project and should not be treated as a replacement for enterprise-grade password auditing or dedicated password-security tools.
+The user can also choose to:
 
-## Sample Output
+- `R` — Reveal password
+- `H` — Hide password
+- `C` — Continue to analysis
+
+---
+
+### 2. Basic Password Analysis
+
+NEXUS analyzes the basic characteristics of the password.
+
+It checks:
+
+- Password length
+- Lowercase characters
+- Uppercase characters
+- Numbers
+- Special characters
+
+It also calculates an estimated **character pool** based on the detected character types.
+
+---
+
+### 3. Entropy Analysis
+
+NEXUS estimates password entropy using the detected character pool and password length.
+
+The estimated entropy is classified into:
+
+| Entropy | Classification |
+|---|---|
+| `< 30 bits` | VERY WEAK |
+| `30–49 bits` | WEAK |
+| `50–69 bits` | MODERATE |
+| `70–89 bits` | STRONG |
+| `90+ bits` | VERY STRONG |
+
+> Entropy is an estimated theoretical measure and should not be interpreted as an exact prediction of real-world cracking time.
+
+---
+
+### 4. Pattern Detection
+
+NEXUS checks for predictable password patterns including:
+
+- Alphabet sequences
+- Sequential numbers
+- Repeated characters
+- Common passwords
+
+Examples of predictable patterns include sequences such as:
 
 ```text
-╔══════════════════════════════════════════════╗
-║        N E X U S  //  SECURITY CORE          ║
-║          PASSWORD INTELLIGENCE               ║
-╚══════════════════════════════════════════════╝
-
-[ SYSTEM BOOT ]
-
-Nexus Core Online.
-
-THREAT ENGINE ........ ACTIVE
-ANALYSIS CORE ........ READY
-
-Password Length : 13
-Lowercase Status : DETECTED
-Uppercase Status : DETECTED
-Number Status : DETECTED
-Special Character Status : DETECTED
-
-Estimated Entropy : 85.41 bits
-Entropy Level : STRONG
-
-Base Security Score : 100 / 100
-
-Alphabet Sequence Pattern : NOT DETECTED
-Sequential Number Pattern : NOT DETECTED
-Repetition Pattern : NOT DETECTED
-Common Password Pattern : NOT DETECTED
-
-Vulnerabilities Detected : 0
-
-Final Score : 100 / 100
-THREAT LEVEL : SECURE
-
-NEXUS VERDICT
-
-SECURITY STATUS : SECURE
-
-## Project Structure
-
-```text
-Password-Strength-Analyzer/
-│
-├── main.py          # Main NEXUS application
-├── README.md        # Project documentation
-└── .gitignore       # Git ignored files
-
-## Limitations
-
-NEXUS is an educational password-analysis project and has some intentional limitations:
-
-- Entropy is an estimated theoretical value, not a real-world cracking-time prediction.
-- Pattern detection currently focuses on selected common patterns.
-- The common-password database is a curated local list.
-- NEXUS does not perform live credential or breach-database checks.
-- The tool does not store or transmit passwords.
+abc
+123
+aaa
+password123
 
 ## Future Improvements
 
@@ -183,4 +169,3 @@ Planned improvements for future versions include:
 ## License
 
 This project is created for educational and portfolio purposes.
-

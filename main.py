@@ -2,7 +2,6 @@ import time
 import math
 from getpass import getpass
 
-
 # ============================================================
 # NEXUS // HELPER FUNCTIONS
 # ============================================================
@@ -72,7 +71,7 @@ def check_common_password(password):
         "welcome",
         "letmein",
         "password123",
-        "MyPassword123!",
+        "mypassword123!",
         "123456789",
         "1234567890",
         "qwerty123",
@@ -95,20 +94,34 @@ def check_common_password(password):
         "111111",
         "654321",
         "123123",
-        "HelloWorld",
-        "Hello123",
+        "helloworld",
+        "hello123",
         "hello@123",
         "whoareyou"
     ]
 
-    password = password.lower()
+    password_lower = password.lower()
 
     for common in common_passwords:
-        if common.lower() in password:
-            return True
+        common_lower = common.lower()
 
-    return False
+        if password_lower == common_lower:
+            return "EXACT"
 
+    for common in common_passwords:
+        common_lower = common.lower()
+
+        if common_lower in password_lower:
+            return "EMBEDDED"
+
+    return "NONE"
+def calculate_common_password_risk(common_password_status):
+    if common_password_status == "EXACT":
+        return "CRITICAL"
+    elif common_password_status == "EMBEDDED":
+        return "HIGH"
+    else:
+        return "LOW"
 
 # ============================================================
 # NEXUS // SCORE ENGINE
@@ -164,14 +177,54 @@ def calculate_score(
 # NEXUS // THREAT ENGINE
 # ============================================================
 
+# def calculate_pattern_risk(
+#     alphabet_sequence,
+#     sequential_numbers,
+#     repetition_pattern,
+#     common_password,
+#     keyboard_pattern_detected
+# ):
+     
+#     pattern_count = 0
+
+#     if keyboard_pattern:
+#         pattern_count += 1
+
+#     if alphabet_sequence:
+#         pattern_count += 1
+
+#     if sequential_numbers:
+#         pattern_count += 1
+
+#     if repetition_pattern:
+#         pattern_count += 1
+
+#     if common_password:
+#         pattern_count += 1
+
+#     if common_password:
+#         return "CRITICAL"
+
+#     elif pattern_count >= 2:
+#         return "HIGH"
+
+#     elif pattern_count == 1:
+#         return "MEDIUM"
+
+#     else:
+#         return "LOW"
 def calculate_pattern_risk(
     alphabet_sequence,
+    effective_sequential_numbers,
     sequential_numbers,
     repetition_pattern,
-    common_password
+    common_password,
+    keyboard_pattern
 ):
-     
     pattern_count = 0
+
+    if keyboard_pattern:
+        pattern_count += 1
 
     if alphabet_sequence:
         pattern_count += 1
@@ -182,13 +235,15 @@ def calculate_pattern_risk(
     if repetition_pattern:
         pattern_count += 1
 
-    if common_password:
-        pattern_count += 1
-
-    if common_password:
+    # Exact common password match
+    if common_password == "EXACT":
         return "CRITICAL"
 
-    elif pattern_count >= 2:
+    # Embedded common password pattern
+    elif common_password == "EMBEDDED":
+        pattern_count += 1
+
+    if pattern_count >= 2:
         return "HIGH"
 
     elif pattern_count == 1:
@@ -197,19 +252,58 @@ def calculate_pattern_risk(
     else:
         return "LOW"
     
+# def calculate_predictability_risk(
+#     common_password,
+#     keyboard_pattern_detected,
+#     alphabet_sequence,
+#     sequential_numbers,
+#     repetition_pattern,
+#     entropy_level
+# ):
+
+#     if common_password:
+#         return "VERY HIGH"
+    
+#     elif (
+#         keyboard_pattern_detected
+#         or alphabet_sequence
+#         or sequential_numbers
+#         or repetition_pattern
+#     ):
+#         return "HIGH"
+
+#     elif (
+#         alphabet_sequence
+#         or sequential_numbers
+#         or repetition_pattern
+#     ):
+#         return "HIGH"
+
+#     elif entropy_level in ["VERY WEAK", "WEAK"]:
+#         return "HIGH"
+
+#     elif entropy_level == "MODERATE":
+#         return "MEDIUM"
+
+#     else:
+#         return "LOW"
 def calculate_predictability_risk(
     common_password,
+    keyboard_pattern_detected,
     alphabet_sequence,
     sequential_numbers,
     repetition_pattern,
     entropy_level
 ):
-
-    if common_password:
+    if common_password == "EXACT":
         return "VERY HIGH"
 
+    elif common_password == "EMBEDDED":
+        return "HIGH"
+
     elif (
-        alphabet_sequence
+        keyboard_pattern_detected
+        or alphabet_sequence
         or sequential_numbers
         or repetition_pattern
     ):
@@ -271,15 +365,52 @@ def calculate_length_risk(length):
     else:
         return "VERY LOW"
 
+# def calculate_attack_exposure(
+#     common_password,
+#     predictability_risk,
+#     complexity_risk,
+#     length_risk
+# ):
+
+#     if common_password:
+#         return "VERY HIGH"
+
+#     elif predictability_risk == "VERY HIGH":
+#         return "VERY HIGH"
+
+#     elif (
+#         predictability_risk == "HIGH"
+#         and length_risk in ["HIGH", "VERY HIGH"]
+#     ):
+#         return "HIGH"
+
+#     elif (
+#         complexity_risk == "VERY HIGH"
+#         or length_risk == "VERY HIGH"
+#     ):
+#         return "HIGH"
+
+#     elif (
+#         predictability_risk == "HIGH"
+#         or complexity_risk == "HIGH"
+#         or length_risk == "MEDIUM"
+#     ):
+#         return "MEDIUM"
+
+#     else:
+#         return "LOW"
+
 def calculate_attack_exposure(
     common_password,
     predictability_risk,
     complexity_risk,
     length_risk
 ):
-
-    if common_password:
+    if common_password == "EXACT":
         return "VERY HIGH"
+
+    elif common_password == "EMBEDDED":
+        return "HIGH"
 
     elif predictability_risk == "VERY HIGH":
         return "VERY HIGH"
@@ -305,6 +436,7 @@ def calculate_attack_exposure(
 
     else:
         return "LOW"
+    
 # ============================================================
 # NEXUS // THREAT AGGREGATOR
 # ============================================================
@@ -322,6 +454,98 @@ def get_risk_value(risk):
 
     return risk_values[risk]
 
+def check_keyboard_pattern(password):
+    keyboard_patterns = [
+        "qwerty",
+        "asdfgh",
+        "zxcvbn",
+        "qazwsx",
+        "1q2w3e",
+        "q1w2e3",
+        "1qaz2wsx",
+        "qwe123",
+        "asdf123",
+        "zxcv123",
+        "qwertyuiop",
+        "asdfghjkl",
+        "zxcvbnm"
+    ]
+
+    password_lower = password.lower()
+
+    for pattern in keyboard_patterns:
+
+        # Normal keyboard pattern
+        if pattern in password_lower:
+            return True, pattern, len(pattern)
+
+        # Reverse keyboard pattern
+        reverse_pattern = pattern[::-1]
+
+        if reverse_pattern in password_lower:
+            return True, reverse_pattern, len(reverse_pattern)
+
+    return False, None, 0
+
+def check_pattern_correlation(
+    keyboard_pattern_detected,
+    keyboard_pattern,
+    sequential_numbers
+):
+    if (
+        keyboard_pattern_detected
+        and keyboard_pattern is not None
+        and sequential_numbers
+    ):
+        if any(char.isdigit() for char in keyboard_pattern):
+            return True
+
+    return False
+
+def calculate_keyboard_risk(
+    keyboard_pattern_detected,
+    keyboard_pattern_length,
+    password_length
+):
+    if not keyboard_pattern_detected:
+        return "LOW"
+
+    pattern_ratio = keyboard_pattern_length / password_length
+
+    if pattern_ratio >= 0.75:
+        return "CRITICAL"
+    elif pattern_ratio >= 0.50:
+        return "HIGH"
+    elif pattern_ratio >= 0.30:
+        return "MEDIUM"
+    else:
+        return "LOW"
+    
+def calculate_threat_score(
+    pattern_risk,
+    predictability_risk,
+    complexity_risk,
+    length_risk,
+    attack_exposure
+):
+    pattern_value = get_risk_value(pattern_risk)
+    predictability_value = get_risk_value(predictability_risk)
+    complexity_value = get_risk_value(complexity_risk)
+    length_value = get_risk_value(length_risk)
+    attack_value = get_risk_value(attack_exposure)
+
+    weighted_score = (
+        pattern_value * 0.20
+        + predictability_value * 0.25
+        + complexity_value * 0.15
+        + length_value * 0.15
+        + attack_value * 0.25
+    )
+
+    threat_score = round(weighted_score, 2)
+
+    return threat_score
+
 def calculate_threat_level(
     pattern_risk,
     predictability_risk,
@@ -336,30 +560,104 @@ def calculate_threat_level(
     length_value = get_risk_value(length_risk)
     attack_value = get_risk_value(attack_exposure)
 
-    threat_score = (
-        pattern_value
-        + predictability_value
-        + complexity_value
-        + length_value
-        + attack_value
+    # --------------------------------------------------------
+    # Threat Score v2 — Weighted Risk Model
+    # --------------------------------------------------------
+
+    weighted_score = (
+        pattern_value * 0.20
+        + predictability_value * 0.25
+        + complexity_value * 0.15
+        + length_value * 0.15
+        + attack_value * 0.25
     )
 
-    if threat_score >= 17:
+    threat_score = round(weighted_score, 2)
+
+    # --------------------------------------------------------
+    # Critical Override
+    # --------------------------------------------------------
+
+    if "CRITICAL" in [
+        pattern_risk,
+        predictability_risk,
+        complexity_risk,
+        length_risk,
+        attack_exposure
+    ]:
+        
         threat_level = "CRITICAL"
 
-    elif threat_score >= 13:
+    # --------------------------------------------------------
+    # Threat Classification
+    # --------------------------------------------------------
+
+    elif threat_score >= 4.0:
         threat_level = "HIGH"
 
-    elif threat_score >= 9:
+    elif threat_score >= 2.5:
         threat_level = "MEDIUM"
 
-    elif threat_score >= 5:
+    elif threat_score >= 1.0:
         threat_level = "LOW"
 
     else:
         threat_level = "SECURE"
 
+# if threat_score >= 4.0:
+#     threat_level = "HIGH"
+
+# elif threat_score >= 2.5:
+#     threat_level = "MEDIUM"
+
+# elif threat_score >= 1.0:
+#     threat_level = "LOW"
+
+# else:
+#     threat_level = "SECURE"
     return threat_score, threat_level
+
+def calculate_final_verdict(
+    threat_level,
+    final_score,
+    vulnerabilities
+):
+    
+    # --------------------------------------------------------
+    # Critical Override
+    # --------------------------------------------------------
+
+    if threat_level == "CRITICAL":
+        return "CRITICAL RISK"
+
+    # # --------------------------------------------------------
+    # # High Risk
+    # # --------------------------------------------------------
+
+    elif threat_level == "HIGH":
+        return "HIGH RISK"
+
+    # # --------------------------------------------------------
+    # # Medium Risk
+    # # --------------------------------------------------------
+
+    elif threat_level == "MEDIUM":
+        return "MODERATE RISK"
+
+    # # --------------------------------------------------------
+    # # Low Risk
+    # # --------------------------------------------------------
+
+    elif threat_level == "LOW":
+        return "LOW RISK"
+
+    # # --------------------------------------------------------
+    # # Secure
+    # # --------------------------------------------------------
+
+    else:
+        return "SECURE"
+    
 # ============================================================
 # NEXUS // VERDICT ENGINE
 # ============================================================
@@ -367,6 +665,7 @@ def calculate_threat_level(
 def generate_verdict(
     vulnerability_count,
     threat_level,
+    final_verdict,
     final_score,
     entropy_level,
     detected_weaknesses
@@ -378,24 +677,26 @@ def generate_verdict(
     print("╚══════════════════════════════════════════════╝")
     print()
 
-    if final_score >= 86:
-        security_status = "SECURE"
+    # if final_score >= 86:
+    #     security_status = "SECURE"
 
-    elif final_score >= 71:
-        security_status = "LOW RISK"
+    # elif final_score >= 71:
+    #     security_status = "LOW RISK"
 
-    elif final_score >= 51:
-        security_status = "MODERATE RISK"
+    # elif final_score >= 51:
+    #     security_status = "MODERATE RISK"
 
-    elif final_score >= 31:
-        security_status = "HIGH RISK"
+    # elif final_score >= 31:
+    #     security_status = "HIGH RISK"
 
-    else:
-        security_status = "CRITICAL RISK"
+    # else:
+    #     security_status = "CRITICAL RISK"
+
+    security_status = final_verdict
 
     print("SECURITY STATUS :", security_status)
     print("Vulnerabilities :", vulnerability_count)
-
+    # security_status = final_verdict
     print()
     print("SECURITY EXPLANATION")
     print("──────────────────────────────────────────────")
@@ -405,7 +706,7 @@ def generate_verdict(
     else:
         print("[!] Security weaknesses were detected.")
         print("[!] These weaknesses reduced the overall security score.")
-        print("[!] Short length or low entropy can reduce resistance to attacks.")
+        # print("[!] Short length or low entropy can reduce resistance to attacks.")
         print()
 
     if detected_weaknesses:
@@ -416,39 +717,58 @@ def generate_verdict(
 
     print()
 
-    if final_score >= 86:
+    # if final_score >= 86:
 
+    #     print("[+] Password security is strong.")
+    #     print("[+] No major security weaknesses detected.")
+
+    # elif final_score >= 71:
+
+    #     print("[+] Password security is good.")
+    #     print("[!] Minor improvements are recommended.")
+
+    # elif final_score >= 51:
+
+    #     print("[!] Password security is moderate.")
+    #     print("[!] Some weaknesses may reduce resistance to attacks.")
+
+    # elif final_score >= 31:
+
+    #     print("[!] Password security is weak.")
+    #     print("[!] Multiple weaknesses are reducing password security.")
+    #     print(
+    #         "[+] Recommendation : "
+    #         "Create a longer and more unpredictable password."
+    #     )
+
+    # else:
+
+    #     print("[CRITICAL] Password security is extremely weak.")
+    #     print("[!] The password contains significant security weaknesses.")
+    #     print(
+    #         "[+] Recommendation : "
+    #         "Replace this password immediately."
+    #     )
+    if final_verdict == "SECURE":
         print("[+] Password security is strong.")
         print("[+] No major security weaknesses detected.")
 
-    elif final_score >= 71:
-
+    elif final_verdict == "LOW RISK":
         print("[+] Password security is good.")
         print("[!] Minor improvements are recommended.")
 
-    elif final_score >= 51:
+    elif final_verdict == "MODERATE RISK":
+        print("[!] Password has moderate security weaknesses.")
+        print("[!] Improve password unpredictability.")
 
-        print("[!] Password security is moderate.")
-        print("[!] Some weaknesses may reduce resistance to attacks.")
-
-    elif final_score >= 31:
-
+    elif final_verdict == "HIGH RISK":
         print("[!] Password security is weak.")
-        print("[!] Multiple weaknesses are reducing password security.")
-        print(
-            "[+] Recommendation : "
-            "Create a longer and more unpredictable password."
-        )
+        print("[!] Major improvements are required.")
 
     else:
-
         print("[CRITICAL] Password security is extremely weak.")
-        print("[!] The password contains significant security weaknesses.")
-        print(
-            "[+] Recommendation : "
-            "Replace this password immediately."
-        )
-
+        print("[!] Replace this password immediately.")
+    
     print()
     print("Security Score :", final_score, "/ 100")
     print("Entropy Level  :", entropy_level)
@@ -461,10 +781,13 @@ def generate_verdict(
 def generate_advisory(
     alphabet_sequence,
     sequential_numbers,
+    pattern_correlation,
     repetition_pattern,
     common_password,
+    keyboard_pattern_detected,
     entropy_level,
     final_score,
+    final_verdict,
     has_lowercase,
     has_uppercase,
     has_number,
@@ -482,13 +805,42 @@ def generate_advisory(
     # Pattern Recommendations
     # --------------------------------------------------------
 
-    if common_password:
+    # if common_password:
+
+    #     recommendations.append(
+    #         (
+    #             100,
+    #             "Common Password",
+    #             "Use a completely unique password."
+    #         )
+    #     )
+
+    if common_password == "EXACT":
 
         recommendations.append(
             (
                 100,
                 "Common Password",
                 "Use a completely unique password."
+            )
+        )
+
+    elif common_password == "EMBEDDED":
+
+        recommendations.append(
+            (
+                85,
+                "Common Password Pattern",
+                "Avoid predictable words or common password fragments."
+            )
+        )
+
+    if keyboard_pattern_detected and keyboard_risk != "LOW":
+        recommendations.append(
+            (
+                95,
+                "Keyboard Pattern",
+                "Avoid predictable keyboard sequences."
             )
         )
 
@@ -502,7 +854,16 @@ def generate_advisory(
             )
         )
 
-    if sequential_numbers:
+    # if sequential_numbers:
+
+    #     recommendations.append(
+    #         (
+    #             80,
+    #             "Sequential Numbers",
+    #             "Avoid predictable number sequences."
+    #         )
+    #     )
+    if sequential_numbers and not pattern_correlation:
 
         recommendations.append(
             (
@@ -611,6 +972,7 @@ def generate_advisory(
         if weakness == "Common Password":
             print("[CRITICAL] Common password pattern detected.")
 
+       
         elif weakness == "Repetition":
             print("[!] Repeated characters detected.")
 
@@ -653,6 +1015,9 @@ def generate_advisory(
                 if weakness == "Common Password":
                     print("[CRITICAL] Common password pattern detected.")
 
+                elif weakness == "Keyboard Pattern":
+                    print("[!] Keyboard pattern detected.")
+                
                 elif weakness == "Repetition":
                     print("[!] Repeated characters detected.")
 
@@ -738,45 +1103,66 @@ def generate_advisory(
     else:
         print("[+] Attack Exposure   :", attack_exposure)
 
-    if final_score >= 86:
-        print("[+] Overall Security  : SECURE")
+    # if final_score >= 86:
+    #     print("[+] Overall Security  : SECURE")
 
-    elif final_score >= 71:
-        print("[+] Overall Security  : LOW RISK")
+    # elif final_score >= 71:
+    #     print("[+] Overall Security  : LOW RISK")
 
-    elif final_score >= 51:
-        print("[!] Overall Security  : MODERATE RISK")
+    # elif final_score >= 51:
+    #     print("[!] Overall Security  : MODERATE RISK")
 
-    elif final_score >= 31:
-        print("[!] Overall Security  : HIGH RISK")
+    # elif final_score >= 31:
+    #     print("[!] Overall Security  : HIGH RISK")
 
-    else:
-        print("[CRITICAL] Overall Security  : CRITICAL RISK")
+    # else:
+    #     print("[CRITICAL] Overall Security  : CRITICAL RISK")
 
+    print("[+] Overall Security  :", final_verdict)
     print()
     print("──────────────────────────────────────────────")
     print("SECURITY RECOMMENDATION")
     print("──────────────────────────────────────────────")
 
-    if final_score >= 86:
+    # if final_score >= 86:
+    #     print("[+] Password meets NEXUS security requirements.")
+    #     print("[+] No immediate improvements required.")
+
+    # elif final_score >= 71:
+    #     print("[+] Password security is good.")
+    #     print("[!] Minor improvements are recommended.")
+
+    # elif final_score >= 51:
+    #     print("[!] Password has moderate security.")
+    #     print("[!] Consider improving password unpredictability.")
+
+    # elif final_score >= 31:
+    #     print("[!] Password security is weak.")
+    #     print("[!] Create a longer and more unpredictable password.")
+
+    # else:
+    #     print("[CRITICAL] Password security is extremely weak.")
+    #     print("[!] Replace this password immediately.")
+    if final_verdict == "SECURE":
         print("[+] Password meets NEXUS security requirements.")
         print("[+] No immediate improvements required.")
 
-    elif final_score >= 71:
+    elif final_verdict == "LOW RISK":
         print("[+] Password security is good.")
         print("[!] Minor improvements are recommended.")
 
-    elif final_score >= 51:
+    elif final_verdict == "MODERATE RISK":
         print("[!] Password has moderate security.")
-        print("[!] Consider improving password unpredictability.")
+        print("[!] Improve password unpredictability.")
 
-    elif final_score >= 31:
+    elif final_verdict == "HIGH RISK":
         print("[!] Password security is weak.")
         print("[!] Create a longer and more unpredictable password.")
 
     else:
         print("[CRITICAL] Password security is extremely weak.")
         print("[!] Replace this password immediately.")
+
 # ============================================================
 # NEXUS // MAIN PROGRAM
 # ============================================================
@@ -1027,6 +1413,7 @@ print()
 
 print("[+] Checking password entropy.............. DONE")
 print("[+] Checking common patterns............... DONE")
+print("[+] Checking keyboard patterns............. DONE")
 print("[+] Checking sequential characters......... DONE")
 print("[+] Checking repetition patterns........... DONE")
 print("[+] Evaluating password complexity......... DONE")
@@ -1069,22 +1456,27 @@ else:
 # Sequential Numbers
 # ------------------------------------------------------------
 
-sequential_numbers = check_sequential_numbers(password)
+# # sequential_numbers = check_sequential_numbers(password)
+# if sequential_numbers:
 
-if sequential_numbers:
+#     if pattern_correlation:
 
-    print("[!] Sequential Number Pattern : DETECTED")
+#         print("[+] Sequential Number Pattern : CORRELATED")
+#         print("    → Already covered by Keyboard Pattern")
 
-    pattern_penalty += 10
+#     else:
 
-    detected_weaknesses.append(
-        "Sequential Numbers"
-    )
+#         print("[!] Sequential Number Pattern : DETECTED")
 
-else:
+#         pattern_penalty += 10
 
-    print("[+] Sequential Number Pattern : NOT DETECTED")
+#         detected_weaknesses.append(
+#             "Sequential Numbers"
+#         )
 
+# else:
+
+#     print("[+] Sequential Number Pattern : NOT DETECTED")
 
 # ------------------------------------------------------------
 # Repetition
@@ -1112,42 +1504,149 @@ else:
 # ------------------------------------------------------------
 
 common_password = check_common_password(password)
+common_password_risk = calculate_common_password_risk(
+    common_password
+)
 
-if common_password:
+# if common_password:
 
-    print("[!] Common Password Pattern : DETECTED")
-
+if common_password == "EXACT":
+    print("[!] Common Password Pattern : EXACT MATCH")
+    print("    Common Password Risk    :", common_password_risk)
     pattern_penalty += 10
 
     detected_weaknesses.append(
         "Common Password"
     )
 
+elif common_password == "EMBEDDED":
+    print("[!] Common Password Pattern : EMBEDDED MATCH")
+    print("    Common Password Risk    :", common_password_risk)
+
+    pattern_penalty += 5
+
+    detected_weaknesses.append(
+        "Common Password Pattern"
+    )
+else:
+    print("[+] Common Password Pattern : NOT DETECTED")
+    print("    Common Password Risk    :", common_password_risk)
+
+    
+    # else:
+
+    # print("[+] Common Password Pattern : NOT DETECTED")
+
+# ------------------------------------------------------------
+# Keyboard Pattern
+# ------------------------------------------------------------
+
+keyboard_pattern_detected, keyboard_pattern, keyboard_pattern_length = check_keyboard_pattern(password)
+
+keyboard_risk = calculate_keyboard_risk(
+    keyboard_pattern_detected,
+    keyboard_pattern_length,
+    length
+)
+sequential_numbers = check_sequential_numbers(password)
+
+pattern_correlation = check_pattern_correlation(
+    keyboard_pattern_detected,
+    keyboard_pattern,
+    sequential_numbers
+)
+
+if sequential_numbers and pattern_correlation:
+
+    print("[+] Sequential Number Pattern : CORRELATED")
+    print("    → Already covered by Keyboard Pattern")
+
+elif sequential_numbers:
+
+    print("[!] Sequential Number Pattern : DETECTED")
+
+    pattern_penalty += 10
+
+    detected_weaknesses.append(
+        "Sequential Numbers"
+    )
+
 else:
 
-    print("[+] Common Password Pattern : NOT DETECTED")
+    print("[+] Sequential Number Pattern : NOT DETECTED")
+pattern_correlation = check_pattern_correlation(
+    keyboard_pattern_detected,
+    keyboard_pattern,
+    sequential_numbers
+)
+print("Keyboard Pattern :", keyboard_pattern)
+print("Keyboard Risk    :", keyboard_risk)
+
+# if keyboard_pattern_detected:
+
+#     print("[!] Keyboard Pattern : DETECTED")
+#     print("    Pattern          :", keyboard_pattern.upper())
+
+#     pattern_penalty += 10
+
+#     detected_weaknesses.append(
+#         "Keyboard Pattern"
+#     )
+
+# else:
+
+#     print("[+] Keyboard Pattern : NOT DETECTED")
+
+if keyboard_pattern_detected:
+    print("[!] Keyboard Pattern : DETECTED")
+    print("    Pattern          :", keyboard_pattern.upper())
+
+    if keyboard_risk == "MEDIUM":
+        pattern_penalty += 5
+        detected_weaknesses.append(
+            "Keyboard Pattern"
+        )
+
+    elif keyboard_risk in ["HIGH", "CRITICAL"]:
+        pattern_penalty += 10
+        detected_weaknesses.append(
+            "Keyboard Pattern"
+        )
+
+else:
+    print("[+] Keyboard Pattern : NOT DETECTED")
 
 # ============================================================
 # PATTERN RISK
 # ============================================================
 
+
+
+effective_sequential_numbers = (
+    sequential_numbers and not pattern_correlation
+)
 pattern_risk = calculate_pattern_risk(
     alphabet_sequence,
+    effective_sequential_numbers,
     sequential_numbers,
     repetition_pattern,
-    common_password
+    common_password,
+    keyboard_pattern_detected
+)
+predictability_risk = calculate_predictability_risk(
+    common_password,
+    keyboard_pattern_detected,
+    alphabet_sequence,
+    effective_sequential_numbers,
+    # sequential_numbers,
+    repetition_pattern,
+    entropy_level
 )
 
 print()
 print("Pattern Risk :", pattern_risk)
 
-predictability_risk = calculate_predictability_risk(
-    common_password,
-    alphabet_sequence,
-    sequential_numbers,
-    repetition_pattern,
-    entropy_level
-)
+
 
 print(
     "Predictability   :",
@@ -1303,7 +1802,7 @@ print(
 # THREAT LEVEL
 # ============================================================
 
-threat_score, threat_level = calculate_threat_level(
+threat_score = calculate_threat_score(
     pattern_risk,
     predictability_risk,
     complexity_risk,
@@ -1311,10 +1810,27 @@ threat_score, threat_level = calculate_threat_level(
     attack_exposure
 )
 
+threat_score, threat_level = calculate_threat_level(
+    pattern_risk,
+    predictability_risk,
+    complexity_risk,
+    length_risk,
+    attack_exposure
+)
+# final_verdict = calculate_final_verdict(
+#     threat_level,
+#     final_score,
+#     vulnerability_count
+# )
 print()
 print("THREAT AGGREGATION")
 print("──────────────────────────────────────────────")
 
+final_verdict = calculate_final_verdict(
+    threat_level,
+    final_score,
+    vulnerability_count
+)
 print(
     "Pattern Risk       :",
     pattern_risk,
@@ -1350,7 +1866,7 @@ print("────────────────────────�
 print(
     "Threat Score       :",
     threat_score,
-    "/ 21"
+    "/ 5"
 )
 
 print(
@@ -1365,6 +1881,7 @@ print(
 generate_verdict(
     vulnerability_count,
     threat_level,
+    final_verdict,
     final_score,
     entropy_level,
     detected_weaknesses
@@ -1374,14 +1891,16 @@ generate_verdict(
 # ============================================================
 # ADVISORY ENGINE
 # ============================================================
-
 generate_advisory(
     alphabet_sequence,
     sequential_numbers,
+    pattern_correlation,
     repetition_pattern,
     common_password,
+    keyboard_pattern_detected,
     entropy_level,
     final_score,
+    final_verdict,
     has_lowercase,
     has_uppercase,
     has_number,
